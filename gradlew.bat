@@ -22,7 +22,7 @@
 @rem ##########################################################################
 
 @rem Set local scope for the variables with windows NT shell
-if "%OrtOS%"=="Windows_NT" setlocal
+if "%OS.OrtOS%"=="Windows_NT" setlocal
 
 set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.
@@ -84,6 +84,6 @@ if  not "" == "%GRADLE_EXIT_CONSOLE%" exit 1
 exit /b 1
 
 :mainEnd
-if "%OrtOS%"=="Windows_NT" endlocal
+if "%OS.OrtOS%"=="Windows_NT" endlocal
 
 :omega

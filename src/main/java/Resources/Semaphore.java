@@ -1,3 +1,5 @@
+package Resources;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Semaphore {

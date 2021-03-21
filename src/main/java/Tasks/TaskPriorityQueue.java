@@ -1,3 +1,7 @@
+package Tasks;
+
+import Tasks.Task;
+
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class TaskPriorityQueue {

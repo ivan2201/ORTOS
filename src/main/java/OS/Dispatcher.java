@@ -1,23 +1,26 @@
+package OS;
+
+import Tasks.Task;
+import Tasks.TaskPriorityQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class Dispatcher extends Thread {
 
-    final TaskPriorityQueue taskQueue;
-    final Consumer<Task> currentTaskCallback;
+    public final TaskPriorityQueue taskQueue;
+    public final Consumer<Task> currentTaskCallback;
 
     private static final Logger log = LoggerFactory.getLogger(Dispatcher.class);
 
     private final AtomicBoolean isFree = new AtomicBoolean(true);
 
     public Dispatcher(final TaskPriorityQueue taskQueue, final Consumer<Task> currentTaskCallback) {
-        this.setName("Dispatcher");
+        this.setName("OS.Dispatcher");
         this.taskQueue = taskQueue;
         this.currentTaskCallback = currentTaskCallback;
         log.debug("Диспетчер готов к работе!");

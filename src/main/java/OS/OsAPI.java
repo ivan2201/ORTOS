@@ -1,3 +1,7 @@
+package OS;
+
+import Tasks.Task;
+
 public interface OsAPI extends UserOsAPI {
 
     void activateTask(Task task);

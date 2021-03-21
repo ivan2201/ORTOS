@@ -1,3 +1,5 @@
+package Resources;
+
 public class Resource {
     public final int id;
     public Semaphore semaphore;

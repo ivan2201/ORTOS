@@ -1,3 +1,8 @@
+package Tasks;
+
+import OS.UserOsAPI;
+import Resources.Resource;
+
 import java.util.ArrayList;
 import java.util.List;
 

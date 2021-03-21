@@ -1,7 +1,13 @@
+package OS;
+
+import EventGenerators.EventGenerator;
+import Resources.Resource;
+import Resources.Semaphore;
+import Tasks.Task;
+import Tasks.TaskPriorityQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,8 +17,10 @@ import java.util.function.Consumer;
 
 public class OrtOS implements OsAPI {
 
-    final static int MAX_TASK_COUNT = 32;
-    final static int MAX_RECOURSE_COUNT = 16;
+    public final static int MAX_TASK_COUNT = 32;
+    public final static int MAX_RECOURSE_COUNT = 16;
+    public final static int MAX_PRIORITY = 10;
+    public static final int GLOBAL_RESOURCES_COUNT = 4;
 
     private final TaskPriorityQueue taskQueue;
     private final List<Resource> resourceList;
@@ -78,6 +86,10 @@ public class OrtOS implements OsAPI {
     }
 
     public void startOS(final Task firstTask) {
+        // Объявляем глобальные ресурсы. Задачи могут запрашивать к ним доступ или создавать свои ЛОКАЛЬНЫЕ переменные.
+        for (int i = 1; i <= GLOBAL_RESOURCES_COUNT; ++i) {
+            resourceList.add(declareResource(i, false));
+        }
         this.dispatcher.start();
         activateTask(firstTask);
     }
@@ -105,7 +117,6 @@ public class OrtOS implements OsAPI {
         }
         final Semaphore semaphore = new Semaphore(resource, activeTask.taskId);
         P(semaphore);
-        /*подождали и дождались, что семафор ресурса совпадает с нашим семафором*/
     }
 
     @Override
@@ -146,6 +157,7 @@ public class OrtOS implements OsAPI {
             throw new IllegalStateException("Задача пытается освободить ресурс, который ей не принадлежит.");
         }
         s.deactivate();
+        // Локальные переменные удаляются после вызова releaseResource().
         if (s.getResource().isLocal) {
             resourceList.remove(s.getResource());
         }
@@ -199,18 +211,34 @@ public class OrtOS implements OsAPI {
         }
     }
 
-//    /**
-//     * Переводит задачу из состояния suspended в состояние ready.
-//     * Этот сервис используется только в обработчиках прерываний.
-//     * Его вызов приводит к планированию задачи
-//     * (задача помещается в очередь готовых, но переключения не происходит).
-//     * Не допускается одновременное присутствие двух активных копий одной задачи.
-//     * @param task -идентификатор задачи, подлежащей активизации
-//     */
-//    private void ISRActivateTask(@NotNull final Task task) {
-//        final Task currentTask = getActiveTask();
-//        activateTask(task);
-//    }
+    public void interpretEvent(final EventGenerator.OsEvent osEvent) {
+        EventGenerator.EventType eventType = osEvent.eventType;
+        switch (eventType) {
+            case declareTask:
+                log.debug("Событие: создание новой задачи.");
+                declareTask(osEvent.taskId, osEvent.taskPriority);
+                break;
+            case declareResource:
+                withCurrentTask((task) -> {
+                    log.debug("Событие: создание локального ресурса.");
+                    final Resource resource = declareResource(osEvent.resourceId, true);
+                    getResource(resource);
+                });
+                break;
+            case getRecourse:
+                withCurrentTask((task) -> {
+                    log.debug("Событие: попытка захвата глобального ресурса.");
+                    final Resource resource = resourceList.get(osEvent.globalResourceIndex);
+                    if (resource.isLocal) {
+                        throw new IllegalStateException("Ожидался глобальный ресурс, а получен локальный.");
+                    }
+                    getResource(resource);
+                });
+                break;
+            default:
+                throw new IllegalStateException("Событие: генератор вышел из чата.");
+        }
+    }
 
 
 }
