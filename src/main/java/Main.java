@@ -1,5 +1,6 @@
-import EventGenerators.GlobalResourceTest;
-import EventGenerators.LocalResourceTest;
+import EventGenerators.SimpleTests.GlobalResourceTest;
+import EventGenerators.SimpleTests.InterruptionTest;
+import EventGenerators.SimpleTests.LocalResourceTest;
 import OS.OrtOS;
 import Tasks.Task;
 import org.slf4j.Logger;
@@ -14,7 +15,7 @@ public class Main {
     public static void main(String[] args) {
         final OrtOS ortOs = new OrtOS();
 //        final Thread eventsGenerator = new InfinityEventGenerator(ortOs::interpretEvent);
-//        final Thread eventsGenerator = new CustomGenerator(ortOs::interpretEvent);
+//        final Thread eventsGenerator = new InterruptionTest(ortOs::interpretEvent);
 //        final Thread eventsGenerator = new LocalResourceTest(ortOs::interpretEvent);
         final Thread eventsGenerator = new GlobalResourceTest(ortOs::interpretEvent);
         final Task taskToStart = new Task(0, MAX_PRIORITY, ortOs);

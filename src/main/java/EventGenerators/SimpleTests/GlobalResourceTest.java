@@ -1,4 +1,6 @@
-package EventGenerators;
+package EventGenerators.SimpleTests;
+
+import EventGenerators.EventGenerator;
 
 import java.util.function.Consumer;
 import java.util.stream.Stream;
