@@ -1,4 +1,3 @@
-import EventGenerators.CustomGenerator;
 import EventGenerators.InfinityEventGenerator;
 import OS.OrtOS;
 import Tasks.Task;
@@ -9,8 +8,6 @@ import org.slf4j.LoggerFactory;
 import static OS.OrtOS.MAX_PRIORITY;
 
 public class Main {
-
-    private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
         final OrtOS ortOs = new OrtOS();
@@ -34,5 +31,6 @@ public class Main {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
+        ortOs.printSystemInfo();
     }
 }
