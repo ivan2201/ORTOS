@@ -31,13 +31,43 @@ public class OrtOS implements OsAPI {
 
     private static final Logger log = LoggerFactory.getLogger(OrtOS.class);
 
+    public final OsInfo info;
+
+    public void printSystemInfo() {
+        log.info("Количество полученных задач: {}\n" +
+                        "Количество выполненных задач: {}\n" +
+                        "Количество задач, отложенных из-за ожидания ресурса: {}\n" +
+                        "Количество задач, которые дождались ожидаемых ресурсов: {}\n" +
+                        "Максимальное количество задач в очереди: {}\n" +
+                        "Максимальное количество ресурсов: {}\n" +
+                        "Количество прерываний: {}\n" +
+                        "Количество объявленных локальных ресурсов: {}\n" +
+                        "Диспетчер корректно завершил работу: {}\n" +
+                        "ОС корректно завершила работу: {}\n" +
+                        "Наличие дедлоков: {}",
+                info.getTasksDoneCount(),
+                info.getTasksTookCount(),
+                info.getWaitingForResourceTasksCount(),
+                info.getGotWaitingForResourceTasksCount(),
+                info.getMaxTaskPull(),
+                info.getMaxRecoursesPull(),
+                info.getInterruptionsCount(),
+                info.getLocalResourcesDeclared(),
+                info.getDispatcherFinishedCorrectly(),
+                info.getOsFinishedCorrectly(),
+                info.hasDeadlocks()
+        );
+    }
+
     public OrtOS() {
+        this.info = new OsInfo();
         this.taskQueue = new TaskPriorityQueue(MAX_TASK_COUNT);
         this.resourceList = new CopyOnWriteArrayList<>();
-        this.dispatcher = new Dispatcher(this.taskQueue, task -> {
+        this.dispatcher = new Dispatcher(this.taskQueue, takenTask -> {
             currentTaskLock.lock();
             try {
-                currentTask = task;
+                info.incrementTasksTookCount();
+                currentTask = takenTask;
             } finally {
                 currentTaskLock.unlock();
             }
@@ -45,9 +75,10 @@ public class OrtOS implements OsAPI {
                 final Resource res = currentTask.waitingFor;
                 getResource(res);
                 currentTask.waitingFor = null;
-                log.debug("Задача " + task + " получила необходимый ресурс " + res);
+                info.incrementGotWaitingForResourceTasksCount();
+                log.debug("Задача " + takenTask + " получила необходимый ресурс " + res);
             }
-        });
+        }, doneTask -> info.incrementTasksDoneCount());
         this.currentTask = null;
     }
 
@@ -64,21 +95,17 @@ public class OrtOS implements OsAPI {
 
     @Override
     public void activateTask(Task task) {
-
         final Task currentTask = getActiveTask();
         if (currentTask == null) {
             log.debug("Диспетчер простаивает! Ставим на выполнение задачу " + task);
             terminateTask();
-            /* дожидаемся, пока задача завершится */
-            // dispatcher.isFree();
         } else if (currentTask.priority < task.priority) {
             log.debug("Произошло прерывание! Активируем задачу " + task);
+            info.incrementInterruptionsCount();
             terminateTask();
-            /* дожидаемся, пока задача завершится */
-            // dispatcher.isFree();
         }
+        info.updateMaxTaskPull(taskQueue.size() + 1);
         taskQueue.add(task);
-
     }
 
     public void terminateTask() {
@@ -88,7 +115,7 @@ public class OrtOS implements OsAPI {
     public void startOS(final Task firstTask) {
         // Объявляем глобальные ресурсы. Задачи могут запрашивать к ним доступ или создавать свои ЛОКАЛЬНЫЕ переменные.
         for (int i = 1; i <= GLOBAL_RESOURCES_COUNT; ++i) {
-            resourceList.add(declareResource(i, false));
+            declareResource(i, false);
         }
         this.dispatcher.start();
         activateTask(firstTask);
@@ -107,6 +134,8 @@ public class OrtOS implements OsAPI {
             e.printStackTrace();
         }
         log.debug("This is the end...");
+        info.setDispatcherFinishedCorrectly();
+        info.setOsFinishedCorrectly();
     }
 
     @Override
@@ -136,6 +165,7 @@ public class OrtOS implements OsAPI {
             // Отдаём управление другой задаче.
             withCurrentTask(task -> {
                 task.waitingFor = newSemaphore.getResource();
+                info.incrementWaitingForResourceTasksCount();
                 log.debug("Задача {} ожидает освобождение ресурса {}", task, newSemaphore.getResource());
                 terminateTask();
             });
@@ -180,6 +210,12 @@ public class OrtOS implements OsAPI {
         }
         final Resource resource = new Resource(resourceId, isLocal);
         log.debug("Создан новый ресурс: " + resource);
+
+        if (isLocal) {
+            info.incrementLocalResourcesDeclared();
+        }
+        info.updateMaxRecoursesPull(resourceList.size() + 1);
+
         resourceList.add(resource);
         return resource;
     }

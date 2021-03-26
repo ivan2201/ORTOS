@@ -1,14 +1,10 @@
 import EventGenerators.InfinityEventGenerator;
 import OS.OrtOS;
 import Tasks.Task;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static OS.OrtOS.MAX_PRIORITY;
 
 public class Main {
-
-    private static final Logger log = LoggerFactory.getLogger(SimpleTests.class);
 
     public static void main(String[] args) {
         final OrtOS ortOs = new OrtOS();

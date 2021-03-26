@@ -14,15 +14,16 @@ public class Dispatcher extends Thread {
 
     public final TaskPriorityQueue taskQueue;
     public final Consumer<Task> currentTaskCallback;
+    public final Consumer<Task> taskDoneCallback;
 
     private static final Logger log = LoggerFactory.getLogger(Dispatcher.class);
-
     private final AtomicBoolean isFree = new AtomicBoolean(true);
 
-    public Dispatcher(final TaskPriorityQueue taskQueue, final Consumer<Task> currentTaskCallback) {
+    public Dispatcher(final TaskPriorityQueue taskQueue, final Consumer<Task> currentTaskCallback, final Consumer<Task> taskDoneCallback) {
         this.setName("OS.Dispatcher");
         this.taskQueue = taskQueue;
         this.currentTaskCallback = currentTaskCallback;
+        this.taskDoneCallback = taskDoneCallback;
         log.debug("Диспетчер готов к работе!");
     }
 
@@ -61,6 +62,7 @@ public class Dispatcher extends Thread {
                     taskQueue.add(task);
                 } else {
                     task.releaseAllResources();
+                    taskDoneCallback.accept(task);
                     log.debug("Диспетчер отпустил задачу " + task);
                 }
                 // закончили работу
