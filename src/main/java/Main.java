@@ -25,5 +25,6 @@ public class Main {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        ortOs.printSystemInfo();
     }
 }

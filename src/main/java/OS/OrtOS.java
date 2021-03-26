@@ -45,8 +45,8 @@ public class OrtOS implements OsAPI {
                         "Диспетчер корректно завершил работу: {}\n" +
                         "ОС корректно завершила работу: {}\n" +
                         "Наличие дедлоков: {}",
-                info.getTasksDoneCount(),
                 info.getTasksTookCount(),
+                info.getTasksDoneCount(),
                 info.getWaitingForResourceTasksCount(),
                 info.getGotWaitingForResourceTasksCount(),
                 info.getMaxTaskPull(),
@@ -66,7 +66,6 @@ public class OrtOS implements OsAPI {
         this.dispatcher = new Dispatcher(this.taskQueue, takenTask -> {
             currentTaskLock.lock();
             try {
-                info.incrementTasksTookCount();
                 currentTask = takenTask;
             } finally {
                 currentTaskLock.unlock();
@@ -232,6 +231,7 @@ public class OrtOS implements OsAPI {
         final Task task = new Task(taskId, priority, this);
         log.debug("Объявлена новая задача: " + task);
         activateTask(task);
+        info.incrementTasksTookCount();
         return task;
     }
 

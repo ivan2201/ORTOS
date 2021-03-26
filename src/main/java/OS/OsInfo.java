@@ -17,7 +17,7 @@ public class OsInfo {
 
     public OsInfo() {
         tasksDoneCount = new AtomicInteger(0);
-        tasksTookCount = new AtomicInteger(0);
+        tasksTookCount = new AtomicInteger(1);
 
         localResourcesDeclared = new AtomicInteger(0);
 
@@ -82,7 +82,7 @@ public class OsInfo {
     }
 
     public int getTasksTookCount() {
-        return tasksDoneCount.get();
+        return tasksTookCount.get();
     }
 
     public int getLocalResourcesDeclared() {
