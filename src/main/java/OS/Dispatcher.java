@@ -65,7 +65,7 @@ public class Dispatcher extends Thread {
                 }
                 // закончили работу
                 currentTaskCallback.accept(null);
-            } catch (final InterruptedException e) {
+            } catch (final InterruptedException | RuntimeException e) {
                 isFree.set(true);
                 // нас прервали!
                 if (task != null && !task.payload.done()) {
@@ -80,8 +80,9 @@ public class Dispatcher extends Thread {
     @Override
     public void interrupt() {
         if (isFree.get()) {
+            log.debug("is free");
             return;
         }
-        super.interrupt();
+        throw new RuntimeException();
     }
 }

@@ -3,7 +3,7 @@ package Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class TaskPayload implements Runnable {
+public class TaskPayload implements Runnable {
 
     private static final long EPSILON = 0L;
 

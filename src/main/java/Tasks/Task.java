@@ -12,7 +12,7 @@ public class Task implements Comparable<Task> {
 
     public final int taskId;
     public final int priority;
-    public final TaskPayload payload;
+    public TaskPayload payload;
     public final List<Resource> mineResources;
     public Resource waitingFor;
 

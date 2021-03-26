@@ -66,6 +66,7 @@ public class OrtOS implements OsAPI {
     public void activateTask(Task task) {
 
         final Task currentTask = getActiveTask();
+        taskQueue.add(task);
         if (currentTask == null) {
             log.debug("Диспетчер простаивает! Ставим на выполнение задачу " + task);
             terminateTask();
@@ -77,11 +78,10 @@ public class OrtOS implements OsAPI {
             /* дожидаемся, пока задача завершится */
             // dispatcher.isFree();
         }
-        taskQueue.add(task);
-
     }
 
     public void terminateTask() {
+
         dispatcher.interrupt();
     }
 
